@@ -49,6 +49,14 @@ test("order phases for happy path", async () => {
   });
   await user.click(confirmOrderButton);
 
+  //confirm "Loading" text
+  const loading = screen.getByText("Loading");
+  expect(loading).toBeInTheDocument();
+  const thankYou = await screen.findByRole("heading", { name: /thank you/i });
+  expect(thankYou).toBeInTheDocument();
+  const notLoading = screen.queryByText("Loading");
+  expect(notLoading).not.toBeInTheDocument();
+
   //check order number on confirmation page
   const orderNumber = await screen.findByText(/order number/i);
   expect(orderNumber).toBeInTheDocument();
@@ -62,6 +70,33 @@ test("order phases for happy path", async () => {
   expect(scoopsTotal).toBeInTheDocument();
   const toppingsTotal = await screen.findByText("Toppings total: §0.00");
   expect(toppingsTotal).toBeInTheDocument();
+
+  unmount();
+});
+
+test("conditional toppings section on summary page", async () => {
+  const user = userEvent.setup();
+  const { unmount } = render(<App />);
+
+  const scoop = await screen.findByRole("spinbutton", {
+    name: "Vanilla",
+  });
+
+  await user.clear(scoop);
+  await user.type(scoop, "1");
+
+  const orderButton = screen.getByRole("button", { name: /order sundae/i });
+  await user.click(orderButton);
+
+  const grandTotal = screen.getByRole("heading", {
+    name: "Order Summary",
+  });
+  expect(grandTotal).toBeInTheDocument();
+
+  const toppingsHeading = screen.queryByRole("heading", {
+    name: "Toppings:",
+  });
+  expect(toppingsHeading).not.toBeInTheDocument();
 
   unmount();
 });

@@ -1,3 +1,4 @@
+import { userEvent } from "@testing-library/user-event/dist/types/setup";
 import { render, screen } from "../../../test-utils/testing-library-utils";
 import Options from "../options";
 
@@ -21,4 +22,17 @@ test("displays image for each topping option", async () => {
     "M&Ms topping",
     "Hot fudge topping",
   ]);
+});
+
+test("dont update total if scoop input is invalid", async () => {
+  const user = userEvent.setup();
+  render(<Options optionType="scoops" />);
+
+  const scoop = await screen.findByRole("spinbutton", { name: "Vanilla" });
+  const scoopsSubtotal = screen.getByText("Scoops total: $0.00");
+
+  await user.clear(scoop);
+  await user.type(scoop, "-1");
+
+  expect(scoopsSubtotal).toHaveTextContent("$0.00");
 });
